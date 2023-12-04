@@ -23,17 +23,16 @@ export default async function createAndAwaitJob<
   let interval: ReturnType<typeof setInterval>
 
   return new Promise<Job | null>((resolve, reject) => {
-    interval = setInterval(() => {
-      poll().then(([job = null]) => {
-        if (!job) {
-          reject(job)
-          return // Return is needed, so TS knows, that after this point job is not null
-        }
-        if (!job.done) return
+    interval = setInterval(async () => {
+      const [job] = await poll()
+      if (!job) {
+        reject(job)
+        return // Return is needed, so TS knows, that after this point job is not null
+      }
+      if (!job.done) return
 
-        if (job.error ?? job.errorMsg) reject(job)
-        else resolve(job)
-      })
+      if (job.error ?? job.errorMsg) reject(job)
+      else resolve(job)
     }, 3000)
   }).finally(() => {
     clearInterval(interval)
