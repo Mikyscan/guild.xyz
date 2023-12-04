@@ -1,3 +1,5 @@
+import { sleep } from "fuels"
+
 export default async function createAndAwaitJob<
   Job extends { done?: boolean; error?: any; errorMsg?: any }
 >(
@@ -20,10 +22,9 @@ export default async function createAndAwaitJob<
     await fetcherWithSign([url, { method: "POST", body }])
   }
 
-  let interval: ReturnType<typeof setInterval>
-
-  return new Promise<Job | null>((resolve, reject) => {
-    interval = setInterval(async () => {
+  let polling = true
+  return new Promise<Job | null>(async (resolve, reject) => {
+    while (polling) {
       const [job] = await poll()
       if (!job) {
         reject(job)
@@ -33,8 +34,10 @@ export default async function createAndAwaitJob<
 
       if (job.error ?? job.errorMsg) reject(job)
       else resolve(job)
-    }, 3000)
+
+      await sleep(3000)
+    }
   }).finally(() => {
-    clearInterval(interval)
+    polling = false
   })
 }
