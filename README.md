@@ -1,4 +1,4 @@
-# Guild.xyz interface
+mikyscan/ Guild.xyz interface
 
 Open source interface for Guild.xyz -- a tool for platformless membership management.
 
